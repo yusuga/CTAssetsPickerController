@@ -340,6 +340,9 @@
 - (void)assetsPickerController:(CTAssetsPickerController *)picker didUnhighlightAsset:(PHAsset *)asset;
 
 
+- (void)ys_assetsPickerController:(CTAssetsPickerController *)picker didLongPressAsset:(PHAsset *)asset;
+
+
 
 
 /**

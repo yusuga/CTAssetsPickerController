@@ -431,6 +431,12 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
         CGPoint point           = [longPress locationInView:self.collectionView];
         NSIndexPath *indexPath  = [self.collectionView indexPathForItemAtPoint:point];
         
+        if ([self.picker.delegate respondsToSelector:@selector(ys_assetsPickerController:didLongPressAsset:)])
+        {
+            [self.picker.delegate ys_assetsPickerController:self.picker didLongPressAsset:[self assetAtIndexPath:indexPath]];
+            return;
+        }
+        
         CTAssetsPageViewController *vc = [[CTAssetsPageViewController alloc] initWithFetchResult:self.fetchResult];
         vc.allowsSelection = YES;
         vc.pageIndex = indexPath.item;
