@@ -341,8 +341,8 @@
 
 
 - (void)ys_assetsPickerController:(CTAssetsPickerController *)picker didLongPressAsset:(PHAsset *)asset;
-
-
+- (void)ys_assetsPickerController:(CTAssetsPickerController *)picker assetsGridViewControllerWillAppear:(UICollectionViewController *)assetsGridViewController;
+- (void)ys_assetsPickerController:(CTAssetsPickerController *)picker assetsGridViewControllerWillDisappear:(UICollectionViewController *)assetsGridViewController;
 
 
 /**

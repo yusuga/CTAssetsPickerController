@@ -113,12 +113,25 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
     [self setupAssets];
     [self updateTitle:self.picker.selectedAssets];
     [self updateButton:self.picker.selectedAssets];
+    
+    if ([self.picker.delegate respondsToSelector:@selector(ys_assetsPickerController:assetsGridViewControllerWillAppear:)]) {
+        [self.picker.delegate ys_assetsPickerController:self.picker assetsGridViewControllerWillAppear:self];
+    }
 }
 
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
     [self updateCachedAssetImages];
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+    [super viewWillDisappear:animated];
+    
+    if ([self.picker.delegate respondsToSelector:@selector(ys_assetsPickerController:assetsGridViewControllerWillDisappear:)]) {
+        [self.picker.delegate ys_assetsPickerController:self.picker assetsGridViewControllerWillDisappear:self];
+    }
 }
 
 - (void)viewWillLayoutSubviews
