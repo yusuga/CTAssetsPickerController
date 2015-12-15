@@ -340,7 +340,7 @@
 - (void)assetsPickerController:(CTAssetsPickerController *)picker didUnhighlightAsset:(PHAsset *)asset;
 
 
-- (void)ys_assetsPickerController:(CTAssetsPickerController *)picker didLongPressAsset:(PHAsset *)asset;
+- (void)ys_assetsPickerController:(CTAssetsPickerController *)picker didLongPressCell:(UICollectionViewCell *)cell asset:(PHAsset *)asset  image:(UIImage *)image;
 - (void)ys_assetsPickerController:(CTAssetsPickerController *)picker assetsGridViewControllerWillAppear:(UICollectionViewController *)assetsGridViewController;
 - (void)ys_assetsPickerController:(CTAssetsPickerController *)picker assetsGridViewControllerWillDisappear:(UICollectionViewController *)assetsGridViewController;
 

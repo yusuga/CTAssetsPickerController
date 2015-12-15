@@ -444,9 +444,27 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
         CGPoint point           = [longPress locationInView:self.collectionView];
         NSIndexPath *indexPath  = [self.collectionView indexPathForItemAtPoint:point];
         
-        if ([self.picker.delegate respondsToSelector:@selector(ys_assetsPickerController:didLongPressAsset:)])
+        if ([self.picker.delegate respondsToSelector:@selector(ys_assetsPickerController:didLongPressCell:asset:image:)])
         {
-            [self.picker.delegate ys_assetsPickerController:self.picker didLongPressAsset:[self assetAtIndexPath:indexPath]];
+            UICollectionViewCell *cell = [self.collectionView cellForItemAtIndexPath:indexPath];
+            CTAssetThumbnailView *thumnailView = (CTAssetThumbnailView *)cell.backgroundView;
+            NSParameterAssert([thumnailView isKindOfClass:[CTAssetThumbnailView class]]);
+
+            UIImage *image;
+            if ([thumnailView isKindOfClass:[CTAssetThumbnailView class]]) {
+                SEL imageViewSelector = @selector(imageView);
+                
+                NSParameterAssert([thumnailView respondsToSelector:imageViewSelector]);
+                if ([thumnailView respondsToSelector:imageViewSelector]) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+                    UIImageView *imageView = [thumnailView performSelector:imageViewSelector];
+#pragma clang diagnostic pop
+                    image = imageView.image;
+                }
+            }
+            
+            [self.picker.delegate ys_assetsPickerController:self.picker didLongPressCell:cell asset:[self assetAtIndexPath:indexPath] image:image];
             return;
         }
         
