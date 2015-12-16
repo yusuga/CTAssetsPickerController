@@ -790,4 +790,18 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
         [self.picker.delegate assetsPickerController:self.picker didUnhighlightAsset:asset];
 }
 
+#pragma mark - 
+
+- (NSArray<PHAsset *> *)ys_allAssets
+{
+    if (![self.fetchResult count]) return nil;
+    
+    NSMutableArray<PHAsset *> *assets = [NSMutableArray arrayWithCapacity:[self.fetchResult count]];
+    [self.fetchResult enumerateObjectsUsingBlock:^(PHAsset * _Nonnull asset, NSUInteger idx, BOOL * _Nonnull stop) {
+        [assets addObject:asset];
+    }];
+    
+    return [assets copy];
+}
+
 @end

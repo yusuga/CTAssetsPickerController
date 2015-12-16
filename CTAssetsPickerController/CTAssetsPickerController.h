@@ -27,6 +27,7 @@
 
 #import <UIKit/UIKit.h>
 #import <Photos/Photos.h>
+#import "CTAssetsGridViewController.h"
 
 
 
@@ -341,8 +342,8 @@
 
 
 - (void)ys_assetsPickerController:(CTAssetsPickerController *)picker didLongPressCell:(UICollectionViewCell *)cell asset:(PHAsset *)asset  image:(UIImage *)image;
-- (void)ys_assetsPickerController:(CTAssetsPickerController *)picker assetsGridViewControllerWillAppear:(UICollectionViewController *)assetsGridViewController;
-- (void)ys_assetsPickerController:(CTAssetsPickerController *)picker assetsGridViewControllerWillDisappear:(UICollectionViewController *)assetsGridViewController;
+- (void)ys_assetsPickerController:(CTAssetsPickerController *)picker assetsGridViewControllerWillAppear:(CTAssetsGridViewController *)assetsGridViewController;
+- (void)ys_assetsPickerController:(CTAssetsPickerController *)picker assetsGridViewControllerWillDisappear:(CTAssetsGridViewController *)assetsGridViewController;
 
 
 /**
