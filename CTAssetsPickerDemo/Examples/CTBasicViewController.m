@@ -25,6 +25,7 @@
  */
 
 #import "CTBasicViewController.h"
+#import "UIImage+CTAssetsPickerController.h"
 
 
 #define tableViewRowHeight 80.0f
@@ -168,6 +169,22 @@
 
     self.assets = [NSMutableArray arrayWithArray:assets];
     [self.tableView reloadData];
+}
+
+- (BOOL)ys_assetsPickerControllerShouldEnableCamera:(CTAssetsPickerController *)picker
+{
+    return YES;
+}
+
+- (void)ys_assetsPickerControllerDidSelectCamera
+{
+    NSLog(@"%s", __func__);
+}
+
+- (UIImage *)ys_assetsPickerControllerCameraImage
+{
+    UIImage *cameraImage = [UIImage ctassetsPickerImageNamed:@"GridEmptyCameraRoll"];
+    return [cameraImage imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
 }
 
 @end

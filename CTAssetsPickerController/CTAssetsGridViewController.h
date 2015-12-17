@@ -46,6 +46,7 @@
 @property (nonatomic, strong) PHAssetCollection *assetCollection;
 
 - (NSArray<PHAsset *> *)ys_allAssets;
+- (PHAsset *)assetAtIndexPath:(NSIndexPath *)indexPath;
 
 @end
 

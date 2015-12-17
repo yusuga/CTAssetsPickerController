@@ -126,6 +126,8 @@
     self.imageView.image = image;
     self.backgroundView.hidden = (image != nil);
     
+    self.imageView.contentMode = asset ? UIViewContentModeScaleAspectFill : UIViewContentModeCenter;
+    
     [self setNeedsUpdateConstraints];
     [self updateConstraintsIfNeeded];
 }

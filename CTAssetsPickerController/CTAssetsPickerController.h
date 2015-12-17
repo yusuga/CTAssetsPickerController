@@ -84,7 +84,7 @@
  *  
  *  You can use this property to select assets initially when presenting the picker.
  */
-@property (nonatomic, strong) NSMutableArray *selectedAssets;
+@property (nonatomic, strong) NSMutableArray<PHAsset *> *selectedAssets;
 
 /**
  *  An optional title for the done button
@@ -344,6 +344,10 @@
 - (void)ys_assetsPickerController:(CTAssetsPickerController *)picker didLongPressCell:(UICollectionViewCell *)cell asset:(PHAsset *)asset  image:(UIImage *)image;
 - (void)ys_assetsPickerController:(CTAssetsPickerController *)picker assetsGridViewControllerWillAppear:(CTAssetsGridViewController *)assetsGridViewController;
 - (void)ys_assetsPickerController:(CTAssetsPickerController *)picker assetsGridViewControllerWillDisappear:(CTAssetsGridViewController *)assetsGridViewController;
+
+- (BOOL)ys_assetsPickerControllerShouldEnableCamera:(CTAssetsPickerController *)picker;
+- (void)ys_assetsPickerControllerDidSelectCamera;
+- (UIImage *)ys_assetsPickerControllerCameraImage;
 
 
 /**

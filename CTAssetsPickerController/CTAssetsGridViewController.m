@@ -62,6 +62,8 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
 
 @property (nonatomic, assign) BOOL didLayoutSubviews;
 
+@property (nonatomic) BOOL ys_cameraShown;
+
 @end
 
 
@@ -172,7 +174,10 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
 
 - (PHAsset *)assetAtIndexPath:(NSIndexPath *)indexPath
 {
-    return (self.fetchResult.count > 0) ? self.fetchResult[indexPath.item] : nil;
+    if (self.ys_cameraShown && indexPath.section == 0 && indexPath.item == 0) {
+        return nil;
+    }
+    return (self.fetchResult.count > 0) ? self.fetchResult[indexPath.item - (self.ys_cameraShown ? 1 : 0)] : nil;
 }
 
 
@@ -208,6 +213,13 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
                                   options:self.picker.assetsFetchOptions];
     
     self.fetchResult = fetchResult;
+    
+    self.ys_cameraShown = [UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera] &&
+    self.assetCollection.assetCollectionSubtype == PHAssetCollectionSubtypeSmartAlbumUserLibrary &&
+    [self.picker.delegate respondsToSelector:@selector(ys_assetsPickerControllerShouldEnableCamera:)] &&
+    [self.picker.delegate respondsToSelector:@selector(ys_assetsPickerControllerDidSelectCamera)] &&
+    [self.picker.delegate respondsToSelector:@selector(ys_assetsPickerControllerCameraImage)];
+    
     [self reloadData];
 }
 
@@ -250,7 +262,7 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
  
     if (shouldScrollToBottom)
     {
-        NSIndexPath *indexPath = [NSIndexPath indexPathForItem:self.fetchResult.count-1 inSection:0];
+        NSIndexPath *indexPath = [NSIndexPath indexPathForItem:self.fetchResult.count-1 + (self.ys_cameraShown ? 1 : 0) inSection:0];
         [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionTop animated:NO];
     }
 }
@@ -395,7 +407,7 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
 - (void)assetsPickerDidSelectAsset:(NSNotification *)notification
 {
     PHAsset *asset = (PHAsset *)notification.object;
-    NSIndexPath *indexPath = [NSIndexPath indexPathForItem:[self.fetchResult indexOfObject:asset] inSection:0];
+    NSIndexPath *indexPath = [NSIndexPath indexPathForItem:[self.fetchResult indexOfObject:asset] + (self.ys_cameraShown ? 1 : 0) inSection:0];
     [self.collectionView selectItemAtIndexPath:indexPath animated:NO scrollPosition:UICollectionViewScrollPositionNone];
     
     [self updateSelectionOrderLabels];
@@ -404,7 +416,7 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
 - (void)assetsPickerDidDeselectAsset:(NSNotification *)notification
 {
     PHAsset *asset = (PHAsset *)notification.object;
-    NSIndexPath *indexPath = [NSIndexPath indexPathForItem:[self.fetchResult indexOfObject:asset] inSection:0];
+    NSIndexPath *indexPath = [NSIndexPath indexPathForItem:[self.fetchResult indexOfObject:asset] + (self.ys_cameraShown ? 1 : 0) inSection:0];
     [self.collectionView deselectItemAtIndexPath:indexPath animated:NO];
     
     [self updateSelectionOrderLabels];
@@ -443,6 +455,10 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
     {
         CGPoint point           = [longPress locationInView:self.collectionView];
         NSIndexPath *indexPath  = [self.collectionView indexPathForItemAtPoint:point];
+        
+        if (self.ys_cameraShown && [indexPath isEqual:[NSIndexPath indexPathForItem:0 inSection:0]]) {
+            return;
+        }
         
         if ([self.picker.delegate respondsToSelector:@selector(ys_assetsPickerController:didLongPressCell:asset:image:)])
         {
@@ -647,7 +663,7 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {
-    return self.fetchResult.count;
+    return self.fetchResult.count + (self.ys_cameraShown ? 1 : 0);
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
@@ -658,31 +674,43 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
     
     PHAsset *asset = [self assetAtIndexPath:indexPath];
     
-    if ([self.picker.delegate respondsToSelector:@selector(assetsPickerController:shouldEnableAsset:)])
-        cell.enabled = [self.picker.delegate assetsPickerController:self.picker shouldEnableAsset:asset];
-    else
-        cell.enabled = YES;
-    
-    cell.showsSelectionIndex = self.picker.showsSelectionIndex;
-    
-    // XXX
-    // Setting `selected` property blocks further deselection.
-    // Have to call selectItemAtIndexPath too. ( ref: http://stackoverflow.com/a/17812116/1648333 )
-    if ([self.picker.selectedAssets containsObject:asset])
-    {
-        cell.selected = YES;
-        cell.selectionIndex = [self.picker.selectedAssets indexOfObject:asset];
-        [collectionView selectItemAtIndexPath:indexPath animated:NO scrollPosition:UICollectionViewScrollPositionNone];
+    if (asset) {
+        if ([self.picker.delegate respondsToSelector:@selector(assetsPickerController:shouldEnableAsset:)])
+            cell.enabled = [self.picker.delegate assetsPickerController:self.picker shouldEnableAsset:asset];
+        else
+            cell.enabled = YES;
+        
+        cell.showsSelectionIndex = self.picker.showsSelectionIndex;
+        
+        // XXX
+        // Setting `selected` property blocks further deselection.
+        // Have to call selectItemAtIndexPath too. ( ref: http://stackoverflow.com/a/17812116/1648333 )
+        if ([self.picker.selectedAssets containsObject:asset])
+        {
+            cell.selected = YES;
+            cell.selectionIndex = [self.picker.selectedAssets indexOfObject:asset];
+            [collectionView selectItemAtIndexPath:indexPath animated:NO scrollPosition:UICollectionViewScrollPositionNone];
+        }
+        
+        [cell bind:asset];
+        
+        UICollectionViewLayoutAttributes *attributes =
+        [collectionView.collectionViewLayout layoutAttributesForItemAtIndexPath:indexPath];
+        
+        CGSize targetSize = [self.picker imageSizeForContainerSize:attributes.size];
+        
+        [self requestThumbnailForCell:cell targetSize:targetSize asset:asset];
+    } else if (self.ys_cameraShown && [indexPath isEqual:[NSIndexPath indexPathForItem:0 inSection:0]]) {
+        cell.enabled = [self.picker.delegate ys_assetsPickerControllerShouldEnableCamera:self.picker];
+        cell.showsSelectionIndex = NO;
+        cell.selected = NO;
+        
+#warning todo image
+        [cell bind:nil];
+        
+        [(CTAssetThumbnailView *)cell.backgroundView bind:[self.picker.delegate ys_assetsPickerControllerCameraImage]
+                                                    asset:nil];
     }
-    
-    [cell bind:asset];
-    
-    UICollectionViewLayoutAttributes *attributes =
-    [collectionView.collectionViewLayout layoutAttributesForItemAtIndexPath:indexPath];
-    
-    CGSize targetSize = [self.picker imageSizeForContainerSize:attributes.size];
-    
-    [self requestThumbnailForCell:cell targetSize:targetSize asset:asset];
 
     return cell;
 }
@@ -722,6 +750,11 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
 
 - (BOOL)collectionView:(UICollectionView *)collectionView shouldSelectItemAtIndexPath:(NSIndexPath *)indexPath
 {
+    if (self.ys_cameraShown && [indexPath isEqual:[NSIndexPath indexPathForItem:0 inSection:0]]) {
+        [self.picker.delegate ys_assetsPickerControllerDidSelectCamera];
+        return NO;
+    }
+    
     PHAsset *asset = [self assetAtIndexPath:indexPath];
     
     CTAssetsGridViewCell *cell = (CTAssetsGridViewCell *)[collectionView cellForItemAtIndexPath:indexPath];
@@ -766,6 +799,10 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
 
 - (BOOL)collectionView:(UICollectionView *)collectionView shouldHighlightItemAtIndexPath:(NSIndexPath *)indexPath
 {
+    if (self.ys_cameraShown && [indexPath isEqual:[NSIndexPath indexPathForItem:0 inSection:0]]) {
+        return YES;
+    }
+    
     PHAsset *asset = [self assetAtIndexPath:indexPath];
     
     if ([self.picker.delegate respondsToSelector:@selector(assetsPickerController:shouldHighlightAsset:)])
@@ -776,6 +813,8 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
 
 - (void)collectionView:(UICollectionView *)collectionView didHighlightItemAtIndexPath:(NSIndexPath *)indexPath
 {
+    if (self.ys_cameraShown && [indexPath isEqual:[NSIndexPath indexPathForItem:0 inSection:0]]) return;
+    
     PHAsset *asset = [self assetAtIndexPath:indexPath];
     
     if ([self.picker.delegate respondsToSelector:@selector(assetsPickerController:didHighlightAsset:)])
@@ -784,6 +823,8 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
 
 - (void)collectionView:(UICollectionView *)collectionView didUnhighlightItemAtIndexPath:(NSIndexPath *)indexPath
 {
+    if (self.ys_cameraShown && [indexPath isEqual:[NSIndexPath indexPathForItem:0 inSection:0]]) return;
+    
     PHAsset *asset = [self assetAtIndexPath:indexPath];
     
     if ([self.picker.delegate respondsToSelector:@selector(assetsPickerController:didUnhighlightAsset:)])
