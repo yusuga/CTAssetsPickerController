@@ -489,7 +489,7 @@ NSString * const CTAssetsPickerDidDeselectAssetNotification = @"CTAssetsPickerDi
     return self.selectedAssets.count;
 }
 
-- (instancetype)objectInSelectedAssetsAtIndex:(NSUInteger)index
+- (PHAsset *)objectInSelectedAssetsAtIndex:(NSUInteger)index
 {
     return [self.selectedAssets objectAtIndex:index];
 }

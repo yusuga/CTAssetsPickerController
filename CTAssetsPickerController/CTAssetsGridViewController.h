@@ -47,6 +47,7 @@
 
 - (NSArray<PHAsset *> *)ys_allAssets;
 - (PHAsset *)assetAtIndexPath:(NSIndexPath *)indexPath;
+@property (nonatomic, readonly) BOOL ys_cameraShown;
 
 @end
 

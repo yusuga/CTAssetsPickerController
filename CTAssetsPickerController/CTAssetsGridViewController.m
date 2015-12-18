@@ -62,7 +62,7 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
 
 @property (nonatomic, assign) BOOL didLayoutSubviews;
 
-@property (nonatomic) BOOL ys_cameraShown;
+@property (nonatomic, readwrite) BOOL ys_cameraShown;
 
 @end
 
@@ -217,7 +217,7 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
     self.ys_cameraShown = [UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera] &&
     self.assetCollection.assetCollectionSubtype == PHAssetCollectionSubtypeSmartAlbumUserLibrary &&
     [self.picker.delegate respondsToSelector:@selector(ys_assetsPickerControllerShouldEnableCamera:)] &&
-    [self.picker.delegate respondsToSelector:@selector(ys_assetsPickerControllerDidSelectCamera)] &&
+    [self.picker.delegate respondsToSelector:@selector(ys_assetsPickerControllerDidSelectCamera:)] &&
     [self.picker.delegate respondsToSelector:@selector(ys_assetsPickerControllerCameraImage)];
     
     [self reloadData];
@@ -372,6 +372,9 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
         if ([self.delegate respondsToSelector:@selector(assetsGridViewController:photoLibraryDidChangeForAssetCollection:)])
             [self.delegate assetsGridViewController:self photoLibraryDidChangeForAssetCollection:self.assetCollection];
         
+        if ([self.picker.delegate respondsToSelector:@selector(ys_assetsPickerController:assetsGridViewController:photoLibraryDidChangeForAssetCollection:)]) {
+            [self.picker.delegate ys_assetsPickerController:self.picker assetsGridViewController:self photoLibraryDidChangeForAssetCollection:self.assetCollection];
+        }
     });
 }
 
@@ -705,9 +708,7 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
         cell.showsSelectionIndex = NO;
         cell.selected = NO;
         
-#warning todo image
         [cell bind:nil];
-        
         [(CTAssetThumbnailView *)cell.backgroundView bind:[self.picker.delegate ys_assetsPickerControllerCameraImage]
                                                     asset:nil];
     }
@@ -750,14 +751,16 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
 
 - (BOOL)collectionView:(UICollectionView *)collectionView shouldSelectItemAtIndexPath:(NSIndexPath *)indexPath
 {
+    CTAssetsGridViewCell *cell = (CTAssetsGridViewCell *)[collectionView cellForItemAtIndexPath:indexPath];
+    
     if (self.ys_cameraShown && [indexPath isEqual:[NSIndexPath indexPathForItem:0 inSection:0]]) {
-        [self.picker.delegate ys_assetsPickerControllerDidSelectCamera];
+        if (cell.enabled) {
+            [self.picker.delegate ys_assetsPickerControllerDidSelectCamera:self.picker];
+        }
         return NO;
     }
     
     PHAsset *asset = [self assetAtIndexPath:indexPath];
-    
-    CTAssetsGridViewCell *cell = (CTAssetsGridViewCell *)[collectionView cellForItemAtIndexPath:indexPath];
     
     if (!cell.isEnabled)
         return NO;
@@ -800,7 +803,8 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
 - (BOOL)collectionView:(UICollectionView *)collectionView shouldHighlightItemAtIndexPath:(NSIndexPath *)indexPath
 {
     if (self.ys_cameraShown && [indexPath isEqual:[NSIndexPath indexPathForItem:0 inSection:0]]) {
-        return YES;
+        CTAssetsGridViewCell *cell = (CTAssetsGridViewCell *)[collectionView cellForItemAtIndexPath:indexPath];
+        return cell.enabled;
     }
     
     PHAsset *asset = [self assetAtIndexPath:indexPath];

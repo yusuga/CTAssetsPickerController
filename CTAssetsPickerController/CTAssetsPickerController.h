@@ -346,8 +346,9 @@
 - (void)ys_assetsPickerController:(CTAssetsPickerController *)picker assetsGridViewControllerWillDisappear:(CTAssetsGridViewController *)assetsGridViewController;
 
 - (BOOL)ys_assetsPickerControllerShouldEnableCamera:(CTAssetsPickerController *)picker;
-- (void)ys_assetsPickerControllerDidSelectCamera;
+- (void)ys_assetsPickerControllerDidSelectCamera:(CTAssetsPickerController *)picker;
 - (UIImage *)ys_assetsPickerControllerCameraImage;
+- (void)ys_assetsPickerController:(CTAssetsPickerController *)picker assetsGridViewController:(CTAssetsGridViewController *)assetsGridViewController photoLibraryDidChangeForAssetCollection:(PHAssetCollection *)assetCollection;
 
 
 /**
