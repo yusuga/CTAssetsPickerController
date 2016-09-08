@@ -222,7 +222,11 @@ NSString * const CTAssetsPickerDidDeselectAssetNotification = @"CTAssetsPickerDi
 {
     PHFetchResult *fetchResult = [PHAsset fetchAssetsWithOptions:self.assetsFetchOptions];
     
-    if (fetchResult.count > 0) {
+    if (fetchResult.count > 0
+        ||
+        ([self.delegate respondsToSelector:@selector(ys_assetsPickerControllerShouldEnableCamera:)] &&
+         [self.delegate ys_assetsPickerControllerShouldEnableCamera:self]))
+    {
         [self showAssetCollectionViewController];
     } else {
         [self showNoAssets];
