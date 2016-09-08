@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name                  = 'CTAssetsPickerController'
-  spec.version               = '3.2.1-yusuga.2'
+  spec.version               = '3.2.1-yusuga.3'
   spec.summary               = 'iOS control that allows picking multiple photos and videos from user\'s photo library.'
 
   spec.description           = <<-DESC
